@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nhà Hàng - Đăng Nhập</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <style>
+    .tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #eee; }
+    .tab-btn { flex: 1; padding: 12px; background: none; border: none; cursor: pointer; font-size: 15px; font-weight: 600; color: #999; }
+    .tab-btn.active { color: #e74c3c; border-bottom: 2px solid #e74c3c; margin-bottom: -2px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: #aaa; font-size: 13px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #eee; }
+    .btn-google { width: 100%; padding: 11px; border: 1.5px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; transition: border-color 0.2s; }
+    .btn-google:hover { border-color: #4285f4; }
+  </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-box">
+      <h2>🍽️ Nhà Hàng</h2>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('login', this)">Đăng nhập</button>
+        <button class="tab-btn" onclick="switchTab('register', this)">Đăng ký</button>
+      </div>
+
+      <!-- ĐĂNG NHẬP -->
+      <div id="tab-login" class="tab-content active">
+        <div class="form-group">
+          <label>Tên đăng nhập</label>
+          <input type="text" id="login-username" placeholder="Nhập username">
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu</label>
+          <input type="password" id="login-password" placeholder="Nhập mật khẩu">
+        </div>
+        <button class="btn btn-primary" onclick="login()">Đăng nhập</button>
+        <p id="login-error" style="color:red;text-align:center;margin-top:12px;font-size:13px;"></p>
+        <div class="divider">hoặc</div>
+        <button class="btn-google" onclick="loginWithGoogle()">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="G">
+          Đăng nhập với Google
+        </button>
+      </div>
+
+      <!-- ĐĂNG KÝ -->
+      <div id="tab-register" class="tab-content">
+        <div class="form-group">
+          <label>Tên đăng nhập</label>
+          <input type="text" id="reg-username" placeholder="Chỉ chữ và số">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="Nhập email">
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu <span style="color:#888;font-size:12px">(tối thiểu 6 ký tự)</span></label>
+          <input type="password" id="reg-password" placeholder="Tối thiểu 6 ký tự">
+        </div>
+        <button class="btn btn-primary" onclick="register()">Đăng ký</button>
+        <p id="reg-msg" style="text-align:center;margin-top:12px;font-size:13px;"></p>
+        <div class="divider">hoặc</div>
+        <button class="btn-google" onclick="loginWithGoogle()">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="G">
+          Đăng ký với Google
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Nếu đã đăng nhập thì redirect đúng trang theo role
+    const existingToken = localStorage.getItem('token');
+    const existingRole = localStorage.getItem('role');
+    if (existingToken) {
+      window.location.href = (existingRole === 'admin' || existingRole === 'nhanvien') ? '/dashboard.html' : '/home.html';
+    }
+
+    function redirectByRole(role) {
+      window.location.href = (role === 'admin' || role === 'nhanvien') ? '/dashboard.html' : '/home.html';
+    }
+
+    function switchTab(tab, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    async function login() {
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+      const errEl = document.getElementById('login-error');
+      errEl.textContent = '';
+      try {
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (!res.ok) { errEl.textContent = 'Sai tên đăng nhập hoặc mật khẩu'; return; }
+        const data = await res.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        redirectByRole(data.role);
+      } catch (e) {
+        errEl.textContent = 'Lỗi kết nối server';
+      }
+    }
+
+    async function register() {
+      const username = document.getElementById('reg-username').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      const msgEl = document.getElementById('reg-msg');
+      msgEl.textContent = '';
+      try {
+        const res = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        if (res.ok) {
+          msgEl.style.color = 'green';
+          msgEl.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
+          setTimeout(() => switchTab('login', document.querySelectorAll('.tab-btn')[0]), 1500);
+        } else {
+          const err = await res.json();
+          msgEl.style.color = 'red';
+          msgEl.textContent = Array.isArray(err) ? Object.values(err[0])[0] : (err.message || 'Đăng ký thất bại');
+        }
+      } catch (e) {
+        msgEl.style.color = 'red';
+        msgEl.textContent = 'Lỗi kết nối server';
+      }
+    }
+
+    function loginWithGoogle() {
+      google.accounts.id.initialize({
+        client_id: '1071806914161-9ac8nme27aakdjbueel6vkonn4noi975.apps.googleusercontent.com',
+        callback: handleGoogleResponse
+      });
+      google.accounts.id.prompt();
+    }
+
+    async function handleGoogleResponse(response) {
+      try {
+        const res = await fetch('/api/v1/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('role', data.role);
+          redirectByRole(data.role); // user → home.html, admin → dashboard.html
+        } else {
+          alert('Đăng nhập Google thất bại');
+        }
+      } catch (e) {
+        alert('Lỗi kết nối server');
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (document.getElementById('tab-login').classList.contains('active')) login();
+        else register();
+      }
+    });
+  </script>
+</body>
+</html>
