@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Nhà Hàng</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo"><h3>🍽️ Nhà Hàng</h3></div>
+      <nav>
+        <a href="#" class="active" onclick="showPage('dashboard')"><span>📊</span> Tổng quan</a>
+        <a href="#" onclick="showPage('tables')"><span>🪑</span> Quản lý bàn</a>
+        <a href="#" onclick="showPage('reservations')"><span>📅</span> Đặt bàn</a>
+        <a href="#" class="staff-hidden" onclick="showPage('customers')"><span>👥</span> Khách hàng</a>
+        <a href="#" class="admin-only" onclick="showPage('categories')"><span>🏷️</span> Danh mục</a>
+        <a href="#" class="admin-only" onclick="showPage('menu')"><span>🍜</span> Thực đơn</a>
+        <a href="#" onclick="showPage('orders')"><span>📋</span> Đơn hàng</a>
+        <a href="#" onclick="showPage('invoices')"><span>🧾</span> Hóa đơn</a>
+        <a href="#" onclick="showPage('payments')"><span>💳</span> Thanh toán</a>
+        <a href="#" class="admin-only" onclick="showPage('discounts')"><span>🎟️</span> Mã giảm giá</a>
+        <a href="#" class="admin-only" onclick="showPage('users')"><span>👤</span> Quản lý Users</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <h4 id="page-title">Tổng quan</h4>
+        <div class="user-info">
+          <span id="user-name">...</span>
+          <!-- Notification Bell -->
+          <div style="position:relative;display:inline-block">
+            <button onclick="toggleNotifications()" style="background:none;border:none;font-size:22px;cursor:pointer;position:relative" title="Thông báo thanh toán">
+              🔔
+              <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;display:none;align-items:center;justify-content:center;font-weight:700"></span>
+            </button>
+            <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:40px;width:320px;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:999;max-height:400px;overflow-y:auto">
+              <div style="padding:12px 16px;border-bottom:1px solid #eee;font-weight:600;font-size:14px">🔔 Yêu cầu thanh toán</div>
+              <div id="notif-list"><div style="padding:16px;text-align:center;color:#aaa;font-size:13px">Không có yêu cầu mới</div></div>
+            </div>
+          </div>
+          <a href="/home.html" target="_blank" style="padding:8px 16px;background:#3498db;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">🌐 Xem trang web</a>
+          <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div id="page-dashboard" class="page active">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon blue">🪑</div><div class="stat-info"><h3 id="stat-tables">-</h3><p>Tổng số bàn</p></div></div>
+            <div class="stat-card"><div class="stat-icon red">🍜</div><div class="stat-info"><h3 id="stat-menu">-</h3><p>Món ăn</p></div></div>
+            <div class="stat-card"><div class="stat-icon green">📋</div><div class="stat-info"><h3 id="stat-orders">-</h3><p>Đơn hàng hôm nay</p></div></div>
+            <div class="stat-card"><div class="stat-icon yellow">👥</div><div class="stat-info"><h3 id="stat-customers">-</h3><p>Khách hàng</p></div></div>
+          </div>
+          <div class="table-wrap" style="padding:20px">
+            <h3 style="margin-bottom:16px">Trạng thái bàn</h3>
+            <div id="tables-status-grid" class="tables-grid"></div>
+          </div>
+        </div>
+
+        <!-- TABLES -->
+        <div id="page-tables" class="page">
+          <div class="page-header">
+            <h2>Quản lý bàn</h2>
+            <button class="btn-add" onclick="openModal('modal-table')">+ Thêm bàn</button>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Số bàn</th><th>Sức chứa</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody id="tables-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- RESERVATIONS -->
+        <div id="page-reservations" class="page">
+          <div class="page-header">
+            <h2>Lịch đặt bàn</h2>
+            <button class="btn-add" onclick="openModal('modal-reservation')">+ Đặt bàn</button>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Khách hàng</th><th>SĐT</th><th>Bàn</th><th>Thời gian</th><th>Số khách</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody id="reservations-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- CUSTOMERS -->
+        <div id="page-customers" class="page">
+          <div class="page-header">
+            <h2>Khách hàng</h2>
+            <button class="btn-add" onclick="openModal('modal-customer')">+ Thêm khách</button>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Tên</th><th>Điện thoại</th><th>Email</th><th>Thao tác</th></tr></thead>
+            <tbody id="customers-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- CATEGORIES -->
+        <div id="page-categories" class="page">
+          <div class="page-header">
+            <h2>Danh mục món</h2>
+            <button class="btn-add" onclick="openModal('modal-category')">+ Thêm danh mục</button>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Tên danh mục</th><th>Thao tác</th></tr></thead>
+            <tbody id="categories-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- MENU -->
+        <div id="page-menu" class="page">
+          <div class="page-header">
+            <h2>Thực đơn</h2>
+            <button class="btn-add" onclick="openModal('modal-menu')">+ Thêm món</button>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Ảnh</th><th>Tên món</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody id="menu-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- ORDERS -->
+        <div id="page-orders" class="page">
+          <div class="page-header">
+            <h2>Đơn hàng</h2>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="order-filter" onchange="loadOrders()" style="padding:8px 12px;border-radius:6px;border:1px solid #ddd;font-size:13px">
+                <option value="active">Đang hoạt động</option>
+                <option value="all">Tất cả</option>
+                <option value="closed">Đã đóng</option>
+                <option value="cancelled">Đã huỷ</option>
+              </select>
+              <button class="btn-add" onclick="openModal('modal-order')">+ Tạo đơn</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Bàn</th><th>Khách hàng</th><th>Trạng thái</th><th>Thời gian</th><th>Thao tác</th></tr></thead>
+            <tbody id="orders-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- INVOICES -->
+        <div id="page-invoices" class="page">
+          <div class="page-header">
+            <h2>Hóa đơn</h2>
+            <button class="btn-add" onclick="openInvoiceModal()">+ Xuất hóa đơn</button>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Bàn</th><th>Tổng tiền</th><th>Giảm giá</th><th>Thành tiền</th><th>Thanh toán</th><th>Thời gian</th><th>Thao tác</th></tr></thead>
+            <tbody id="invoices-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- PAYMENTS (lịch sử) -->
+        <div id="page-payments" class="page">
+          <div class="page-header"><h2>Lịch sử thanh toán</h2></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Bàn</th><th>Tổng tiền</th><th>Giảm giá</th><th>Thành tiền</th><th>Phương thức</th><th>Mã giảm giá</th><th>Thời gian</th></tr></thead>
+            <tbody id="payments-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- DISCOUNTS -->
+        <div id="page-discounts" class="page">
+          <div class="page-header">
+            <h2>Mã giảm giá</h2>
+            <button class="btn-add" onclick="document.getElementById('discount-id').value='';document.getElementById('discount-modal-title').textContent='Tạo mã giảm giá';document.getElementById('discount-save-btn').textContent='Tạo mã';openModal('modal-discount')">+ Tạo mã</button>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Mã</th><th>Loại</th><th>Giá trị</th><th>Đơn tối thiểu</th><th>Ngày bắt đầu</th><th>Ngày kết thúc</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody id="discounts-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- USERS (Admin only) -->
+        <div id="page-users" class="page">
+          <div class="page-header"><h2>Quản lý Users</h2></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Username</th><th>Email</th><th>Role hiện tại</th><th>Đổi role</th></tr></thead>
+            <tbody id="users-body"></tbody>
+          </table></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <!-- Table Modal -->
+  <div id="modal-table" class="modal-overlay">
+    <div class="modal">
+      <h3>Thêm / Sửa bàn</h3>
+      <input type="hidden" id="table-id">
+      <div class="form-group"><label>Số bàn</label><input type="number" id="table-number"></div>
+      <div class="form-group"><label>Sức chứa</label><input type="number" id="table-capacity" value="4"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-table')">Huỷ</button>
+        <button class="btn-save" onclick="saveTable()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Modal -->
+  <div id="modal-customer" class="modal-overlay">
+    <div class="modal">
+      <h3>Thêm / Sửa khách hàng</h3>
+      <input type="hidden" id="customer-id">
+      <div class="form-group"><label>Tên</label><input type="text" id="customer-name"></div>
+      <div class="form-group"><label>Điện thoại</label><input type="text" id="customer-phone"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="customer-email"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-customer')">Huỷ</button>
+        <button class="btn-save" onclick="saveCustomer()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div id="modal-category" class="modal-overlay">
+    <div class="modal">
+      <h3>Thêm danh mục</h3>
+      <input type="hidden" id="category-id">
+      <div class="form-group"><label>Tên danh mục</label><input type="text" id="category-name"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-category')">Huỷ</button>
+        <button class="btn-save" onclick="saveCategory()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu Modal -->
+  <div id="modal-menu" class="modal-overlay">
+    <div class="modal">
+      <h3>Thêm / Sửa món ăn</h3>
+      <input type="hidden" id="menu-id">
+      <input type="hidden" id="menu-image-url">
+      <div class="form-group"><label>Tên món</label><input type="text" id="menu-name"></div>
+      <div class="form-group"><label>Giá (VNĐ)</label><input type="number" id="menu-price"></div>
+      <div class="form-group"><label>Danh mục</label><select id="menu-category"></select></div>
+      <div class="form-group"><label>Số lượng tồn kho</label><input type="number" id="menu-stock" value="0" min="0"></div>
+      <div class="form-group"><label>Mô tả</label><input type="text" id="menu-desc"></div>
+      <div class="form-group">
+        <label>Ảnh món ăn</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="file" id="menu-image-file" accept="image/*" onchange="uploadMenuImage(this)" style="flex:1">
+        </div>
+        <div id="menu-image-preview" style="margin-top:8px;display:none">
+          <img id="menu-image-thumb" src="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #ddd">
+          <span id="menu-image-status" style="font-size:12px;color:#27ae60;margin-left:8px"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-menu')">Huỷ</button>
+        <button class="btn-save" onclick="saveMenuItem()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reservation Modal -->
+  <div id="modal-reservation" class="modal-overlay">
+    <div class="modal">
+      <h3>Tạo đặt bàn</h3>
+      <div class="form-group"><label>Tên khách *</label><input type="text" id="res-name" placeholder="Nguyễn Văn A"></div>
+      <div class="form-group"><label>Số điện thoại *</label><input type="text" id="res-phone" placeholder="0901234567"></div>
+      <div class="form-group"><label>Email (để nhận xác nhận)</label><input type="email" id="res-email"></div>
+      <div class="form-group"><label>Ngày & Giờ *</label><input type="datetime-local" id="res-date"></div>
+      <div class="form-group"><label>Số khách</label><input type="number" id="res-guests" value="2" min="1"></div>
+      <div class="form-group"><label>Ghi chú</label><input type="text" id="res-note" placeholder="Sinh nhật, dị ứng thực phẩm..."></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-reservation')">Huỷ</button>
+        <button class="btn-save" onclick="saveReservation()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Reservation Modal (gán bàn) -->
+  <div id="modal-confirm-res" class="modal-overlay">
+    <div class="modal">
+      <h3>Xác nhận & Gán bàn</h3>
+      <input type="hidden" id="confirm-res-id">
+      <div id="confirm-res-info" style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:16px;font-size:14px"></div>
+      <div class="form-group"><label>Chọn bàn để gán *</label><select id="confirm-res-table"></select></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-confirm-res')">Huỷ</button>
+        <button class="btn-save" onclick="confirmReservation()">✅ Xác nhận & Gửi email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Modal -->
+  <div id="modal-order" class="modal-overlay">
+    <div class="modal">
+      <h3>Tạo đơn hàng</h3>
+      <div class="form-group"><label>Bàn</label><select id="order-table"></select></div>
+      <div class="form-group"><label>Khách hàng (tuỳ chọn)</label><select id="order-customer"><option value="">-- Không chọn --</option></select></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-order')">Huỷ</button>
+        <button class="btn-save" onclick="saveOrder()">Tạo đơn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Item to Order Modal -->
+  <div id="modal-add-item" class="modal-overlay">
+    <div class="modal">
+      <h3>Thêm món vào đơn</h3>
+      <input type="hidden" id="add-item-order-id">
+      <div class="form-group"><label>Món ăn</label><select id="add-item-menu"></select></div>
+      <div class="form-group"><label>Số lượng</label><input type="number" id="add-item-qty" value="1" min="1"></div>
+      <div class="form-group"><label>Ghi chú</label><input type="text" id="add-item-note"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-add-item')">Huỷ</button>
+        <button class="btn-save" onclick="addItemToOrder()">Thêm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div id="modal-invoice" class="modal-overlay">
+    <div class="modal" style="width:520px">
+      <h3>Xuất hóa đơn & Thanh toán</h3>
+      <div class="form-group"><label>Đơn hàng (đang phục vụ)</label><select id="invoice-order" onchange="previewInvoice()"></select></div>
+      <div class="form-group" style="display:flex;gap:8px;align-items:flex-end">
+        <div style="flex:1"><label>Mã giảm giá</label><input type="text" id="invoice-discount-code" placeholder="VD: GIAM20K" style="text-transform:uppercase"></div>
+        <button class="btn-secondary" style="height:38px;padding:0 14px" onclick="applyDiscountCode()">Áp dụng</button>
+      </div>
+      <div id="invoice-discount-msg" style="font-size:13px;margin-top:-8px;margin-bottom:8px;color:#27ae60;display:none"></div>
+      <div style="background:#f8f9fa;border-radius:8px;padding:14px;margin-bottom:16px;font-size:14px" id="invoice-preview">
+        <p style="color:#aaa;text-align:center">Chọn đơn hàng để xem tạm tính</p>
+      </div>
+      <div class="form-group"><label>Phương thức thanh toán</label>
+        <select id="invoice-payment-method">
+          <option value="cash">💵 Tiền mặt</option>
+          <option value="transfer">🏦 Chuyển khoản</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-invoice')">Huỷ</button>
+        <button class="btn-save" onclick="saveInvoice()">✅ Xác nhận thanh toán</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Discount Modal -->
+  <div id="modal-discount" class="modal-overlay">
+    <div class="modal">
+      <h3 id="discount-modal-title">Tạo mã giảm giá</h3>
+      <input type="hidden" id="discount-id">
+      <div class="form-group"><label>Mã (VD: GIAM20K)</label><input type="text" id="discount-code" style="text-transform:uppercase"></div>
+      <div class="form-group"><label>Loại giảm giá</label>
+        <select id="discount-type" onchange="updateDiscountValueHint()">
+          <option value="amount">Số tiền cố định (VNĐ)</option>
+          <option value="percent">Phần trăm (%)</option>
+        </select>
+      </div>
+      <div class="form-group"><label id="discount-value-label">Giá trị (VNĐ)</label><input type="number" id="discount-value" min="0" placeholder="VD: 20000"></div>
+      <div class="form-group"><label>Đơn tối thiểu (VNĐ) <span style="color:#aaa;font-size:12px">— để trống nếu không giới hạn</span></label><input type="number" id="discount-min-order" min="0" placeholder="VD: 500000"></div>
+      <div class="form-group"><label>Ngày bắt đầu</label><input type="datetime-local" id="discount-start"></div>
+      <div class="form-group"><label>Ngày kết thúc</label><input type="datetime-local" id="discount-expiry"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-discount')">Huỷ</button>
+        <button class="btn-save" id="discount-save-btn" onclick="saveDiscount()">Tạo mã</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Detail Modal -->
+  <div id="modal-invoice-detail" class="modal-overlay">
+    <div class="modal" style="width:580px">
+      <h3>Chi tiết hóa đơn</h3>
+      <div id="invoice-detail-content"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-invoice-detail')">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div id="modal-order-detail" class="modal-overlay">
+    <div class="modal" style="width:560px">
+      <h3>Chi tiết đơn hàng</h3>
+      <div id="order-detail-content"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-order-detail')">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approve Payment Modal -->
+  <div id="modal-approve-payment" class="modal-overlay">
+    <div class="modal" style="width:520px">
+      <h3>🧾 Duyệt thanh toán</h3>
+      <input type="hidden" id="approve-order-id">
+      <div id="approve-payment-content"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-approve-payment')">Đóng</button>
+        <button class="btn-save" style="background:#27ae60" onclick="approvePayment()">✅ Xác nhận đã nhận tiền</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
