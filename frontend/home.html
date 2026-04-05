@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nhà Hàng - Trang Chủ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #fff; color: #333; }
+
+    nav { background: #2c3e50; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; height: 60px; position: sticky; top: 0; z-index: 100; }
+    nav .logo { color: #e74c3c; font-size: 20px; font-weight: 700; text-decoration: none; }
+    nav ul { list-style: none; display: flex; gap: 24px; }
+    nav ul a { color: #bdc3c7; text-decoration: none; font-size: 14px; }
+    nav ul a:hover { color: #fff; }
+    nav .nav-right { display: flex; align-items: center; gap: 12px; }
+    nav .btn-nav { padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: none; }
+    nav .btn-logout { background: #e74c3c; color: #fff; }
+
+    /* CART ICON */
+    .cart-btn { position: relative; background: #e74c3c; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 14px; font-weight: 600; }
+    .cart-badge { position: absolute; top: -6px; right: -6px; background: #f39c12; color: #fff; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+
+    /* TABLE SELECTOR */
+    .table-banner { background: #f39c12; color: #fff; text-align: center; padding: 12px; font-size: 15px; font-weight: 600; }
+    .table-banner span { background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 20px; margin-left: 8px; }
+    .table-banner button { background: rgba(0,0,0,0.2); color: #fff; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; margin-left: 8px; font-size: 13px; }
+
+    /* HERO */
+    .hero { background: linear-gradient(135deg, #2c3e50, #e74c3c); color: #fff; text-align: center; padding: 60px 20px; }
+    .hero h1 { font-size: 36px; margin-bottom: 12px; }
+    .hero p { font-size: 16px; opacity: 0.9; }
+
+    /* SECTION */
+    section { padding: 40px 24px; }
+    section h2 { text-align: center; font-size: 26px; margin-bottom: 8px; }
+    .section-sub { text-align: center; color: #888; margin-bottom: 32px; font-size: 14px; }
+
+    /* MENU */
+    .menu-filter { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+    .filter-btn { padding: 8px 18px; border-radius: 20px; border: 2px solid #ddd; background: #fff; cursor: pointer; font-size: 14px; }
+    .filter-btn.active { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .menu-card { border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.08); transition: transform 0.2s; }
+    .menu-card:hover { transform: translateY(-4px); }
+    .img-placeholder { width: 100%; height: 160px; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); display: flex; align-items: center; justify-content: center; font-size: 36px; }
+    .menu-card img { width: 100%; height: 160px; object-fit: cover; }
+    .menu-card-body { padding: 14px; }
+    .menu-card-body h3 { font-size: 15px; margin-bottom: 4px; }
+    .menu-card-body p { font-size: 12px; color: #888; margin-bottom: 10px; }
+    .menu-card-footer { display: flex; justify-content: space-between; align-items: center; }
+    .menu-price { font-size: 16px; font-weight: 700; color: #e74c3c; }
+    .menu-cat { font-size: 11px; background: #fde8e8; color: #e74c3c; padding: 3px 8px; border-radius: 10px; }
+    .btn-add-cart { width: 100%; margin-top: 10px; padding: 8px; background: #e74c3c; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .btn-add-cart:hover { background: #c0392b; }
+
+    /* CART DRAWER */
+    .cart-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
+    .cart-overlay.open { display: block; }
+    .cart-drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 380px; background: #fff; z-index: 201; display: flex; flex-direction: column; box-shadow: -4px 0 20px rgba(0,0,0,0.15); transform: translateX(100%); transition: transform 0.3s; }
+    .cart-drawer.open { transform: translateX(0); }
+    .cart-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .cart-header h3 { font-size: 18px; }
+    .cart-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+    .cart-body { flex: 1; overflow-y: auto; padding: 16px; }
+    .cart-empty { text-align: center; color: #aaa; padding: 40px 0; font-size: 15px; }
+    .cart-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .cart-item-info { flex: 1; }
+    .cart-item-info h4 { font-size: 14px; margin-bottom: 4px; }
+    .cart-item-info p { font-size: 13px; color: #e74c3c; font-weight: 600; }
+    .cart-qty { display: flex; align-items: center; gap: 8px; }
+    .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .qty-btn:hover { background: #f0f0f0; }
+    .cart-footer { padding: 16px; border-top: 1px solid #eee; }
+    .cart-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .btn-order { width: 100%; padding: 14px; background: #27ae60; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .btn-order:hover { background: #219a52; }
+    .btn-order:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* TABLE MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; justify-content: center; align-items: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 32px; width: 360px; text-align: center; }
+    .modal-box h3 { font-size: 20px; margin-bottom: 8px; }
+    .modal-box p { color: #888; font-size: 14px; margin-bottom: 20px; }
+    .table-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .table-opt { padding: 12px 8px; border-radius: 8px; border: 2px solid #ddd; cursor: pointer; font-size: 14px; font-weight: 600; text-align: center; transition: all 0.2s; }
+    .table-opt.available { border-color: #27ae60; color: #27ae60; }
+    .table-opt.occupied { border-color: #e74c3c; color: #e74c3c; background: #fde8e8; cursor: not-allowed; }
+    .table-opt.selected { background: #27ae60; color: #fff; border-color: #27ae60; }
+    .btn-confirm-table { width: 100%; padding: 12px; background: #e74c3c; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 8px; color: #fff; font-size: 14px; z-index: 9999; white-space: nowrap; }
+    .toast.success { background: #27ae60; }
+    .toast.error { background: #e74c3c; }
+
+    footer { background: #2c3e50; color: #bdc3c7; text-align: center; padding: 20px; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+  <!-- TABLE BANNER -->
+  <div id="table-banner" class="table-banner" style="display:none">
+    🪑 Bạn đang ngồi tại bàn <span id="current-table-name">-</span>
+    <button onclick="changeTable()">Đổi bàn</button>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="/home.html">🍽️ Nhà Hàng</a>
+    <ul>
+      <li><a href="#menu">Thực đơn</a></li>
+      <li><a href="#reservation">Đặt bàn</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="cart-btn" onclick="openCart()">
+        🛒 Giỏ món
+        <span class="cart-badge" id="cart-badge" style="display:none">0</span>
+      </button>
+      <span id="nav-username" style="color:#bdc3c7;font-size:13px;"></span>
+      <button id="nav-auth-btn" class="btn-nav btn-logout" onclick="navAuth()">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>🍽️ Chào mừng đến Nhà Hàng</h1>
+    <p>Thưởng thức ẩm thực đặc sắc — Không gian ấm cúng — Phục vụ tận tâm</p>
+  </div>
+
+  <!-- MENU -->
+  <section id="menu">
+    <h2>Thực đơn</h2>
+    <p class="section-sub">Chọn món yêu thích và thêm vào giỏ</p>
+    <div class="menu-filter" id="menu-filter">
+      <button class="filter-btn active" onclick="filterMenu('all', this)">Tất cả</button>
+    </div>
+    <div class="menu-grid" id="menu-grid"></div>
+  </section>
+
+  <!-- RESERVATION -->
+  <section id="reservation" style="background:#f8f9fa">
+    <h2>Đặt bàn trước</h2>
+    <p class="section-sub">Đặt bàn để chúng tôi chuẩn bị tốt nhất cho bạn</p>
+    <div style="max-width:500px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="margin-bottom:16px"><label style="display:block;margin-bottom:6px;font-size:14px;font-weight:500">Họ tên *</label><input type="text" id="res-name" placeholder="Nguyễn Văn A" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px"></div>
+        <div style="margin-bottom:16px"><label style="display:block;margin-bottom:6px;font-size:14px;font-weight:500">Số điện thoại *</label><input type="text" id="res-phone" placeholder="0901234567" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px"></div>
+      </div>
+      <div style="margin-bottom:16px"><label style="display:block;margin-bottom:6px;font-size:14px;font-weight:500">Email (nhận xác nhận)</label><input type="email" id="res-email" placeholder="email@example.com" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="margin-bottom:16px">
+          <label style="display:block;margin-bottom:6px;font-size:14px;font-weight:500">Ngày & Giờ *</label>
+          <input type="datetime-local" id="res-datetime" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+          <p style="font-size:11px;color:#aaa;margin-top:4px">Chỉ đặt trước tối đa 30 ngày</p>
+        </div>
+        <div style="margin-bottom:16px"><label style="display:block;margin-bottom:6px;font-size:14px;font-weight:500">Số khách</label><input type="number" id="res-guests" value="2" min="1" max="20" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px"></div>
+      </div>
+      <div style="margin-bottom:20px"><label style="display:block;margin-bottom:6px;font-size:14px;font-weight:500">Ghi chú</label><textarea id="res-note" rows="2" placeholder="Sinh nhật, dị ứng thực phẩm, yêu cầu đặc biệt..." style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px"></textarea></div>
+      <div id="res-msg" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px"></div>
+      <button onclick="submitReservation()" id="btn-submit-res" style="width:100%;padding:14px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">🗓️ Đặt bàn ngay</button>
+    </div>
+  </section>
+
+  <footer><p>© 2026 Nhà Hàng | 123 Đường ABC, TP.HCM | ĐT: 0901 234 567</p></footer>
+
+  <!-- CART DRAWER -->
+  <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h3>🛒 Giỏ món của bạn</h3>
+      <button class="cart-close" onclick="closeCart()">×</button>
+    </div>
+    <div class="cart-body" id="cart-body">
+      <div class="cart-empty">Chưa có món nào</div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total"><span>Tổng cộng:</span><span id="cart-total">0đ</span></div>
+      <button class="btn-order" id="btn-place-order" onclick="placeOrder()">✅ Gọi món ngay</button>
+      <button class="btn-order" id="btn-request-payment" onclick="openPaymentModal()" style="background:#3498db;margin-top:8px;display:none">💳 Yêu cầu thanh toán</button>
+    </div>
+  </div>
+
+  <!-- PAYMENT MODAL -->
+  <div class="modal-overlay" id="modal-payment" style="z-index:400">
+    <div class="modal-box" style="width:420px;max-width:95vw;text-align:left;max-height:90vh;overflow-y:auto">
+      <h3 style="margin-bottom:16px;font-size:18px">💳 Thanh toán</h3>
+
+      <!-- Danh sách món -->
+      <div id="pay-items" style="margin-bottom:12px"></div>
+
+      <!-- Mã giảm giá -->
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input type="text" id="pay-discount-code" placeholder="Mã giảm giá (tuỳ chọn)" style="flex:1;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;text-transform:uppercase">
+        <button onclick="applyPayDiscount()" style="padding:9px 14px;background:#f39c12;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">Áp dụng</button>
+      </div>
+      <div id="pay-discount-msg" style="font-size:12px;margin-bottom:8px;display:none"></div>
+
+      <!-- Tổng kết -->
+      <div id="pay-summary" style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:16px;font-size:14px"></div>
+
+      <!-- Phương thức -->
+      <div style="margin-bottom:16px">
+        <p style="font-weight:600;margin-bottom:10px;font-size:14px">Chọn phương thức thanh toán:</p>
+        <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #ddd;border-radius:8px;cursor:pointer;margin-bottom:8px" id="pay-opt-cash">
+          <input type="radio" name="pay-method" value="cash" onchange="selectPayMethod('cash')" style="width:16px;height:16px">
+          <span>💵 Thanh toán tại quầy</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #ddd;border-radius:8px;cursor:pointer" id="pay-opt-transfer">
+          <input type="radio" name="pay-method" value="transfer" onchange="selectPayMethod('transfer')" style="width:16px;height:16px">
+          <span>🏦 Chuyển khoản ngân hàng</span>
+        </label>
+      </div>
+
+      <!-- Thông tin theo phương thức -->
+      <div id="pay-method-info" style="margin-bottom:16px"></div>
+
+      <div style="display:flex;gap:8px">
+        <button onclick="closePaymentModal()" style="flex:1;padding:12px;background:#eee;border:none;border-radius:8px;cursor:pointer;font-size:14px">Huỷ</button>
+        <button id="btn-confirm-payment" onclick="confirmPaymentRequest()" style="flex:2;padding:12px;background:#27ae60;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">✅ Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE SELECT MODAL -->
+  <div class="modal-overlay open" id="modal-table">
+    <div class="modal-box">
+      <h3>🪑 Chọn bàn của bạn</h3>
+      <p>Vui lòng chọn số bàn bạn đang ngồi</p>
+      <div class="table-grid" id="table-select-grid"></div>
+      <button class="btn-confirm-table" onclick="confirmTable()">Xác nhận</button>
+    </div>
+  </div>
+
+  <script>
+    let allMenuItems = [];
+    let cart = JSON.parse(localStorage.getItem('nh_cart') || '[]');
+    let selectedTableId = localStorage.getItem('nh_table_id') || null;
+    let selectedTableNum = localStorage.getItem('nh_table_num') || null;
+    const token = localStorage.getItem('token');
+
+    // Nếu đã chọn bàn thì đóng modal
+    if (selectedTableId) {
+      document.getElementById('modal-table').classList.remove('open');
+      document.getElementById('table-banner').style.display = 'block';
+      document.getElementById('current-table-name').textContent = selectedTableNum;
+    }
+
+    // Load tables cho modal chọn bàn
+    async function loadTableModal() {
+      const res = await fetch('/api/v1/tables');
+      const tables = await res.json();
+      document.getElementById('table-select-grid').innerHTML = tables.map(t => `
+        <div class="table-opt ${t.status}" onclick="selectTable('${t._id}','${t.number}',this)" id="topt-${t._id}">
+          Bàn ${t.number}
+        </div>`).join('');
+    }
+
+    let tempTableId = null, tempTableNum = null;
+    function selectTable(id, num, el) {
+      if (el.classList.contains('occupied')) return;
+      document.querySelectorAll('.table-opt').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      tempTableId = id;
+      tempTableNum = num;
+    }
+
+    function confirmTable() {
+      if (!tempTableId) { showToast('Vui lòng chọn bàn', 'error'); return; }
+      selectedTableId = tempTableId;
+      selectedTableNum = tempTableNum;
+      localStorage.setItem('nh_table_id', selectedTableId);
+      localStorage.setItem('nh_table_num', selectedTableNum);
+      document.getElementById('modal-table').classList.remove('open');
+      document.getElementById('table-banner').style.display = 'block';
+      document.getElementById('current-table-name').textContent = selectedTableNum;
+      showToast(`Đã chọn Bàn ${selectedTableNum}`);
+    }
+
+    function changeTable() {
+      localStorage.removeItem('nh_table_id');
+      localStorage.removeItem('nh_table_num');
+      selectedTableId = null;
+      document.getElementById('modal-table').classList.add('open');
+      document.getElementById('table-banner').style.display = 'none';
+    }
+
+    // MENU
+    async function loadMenu() {
+      const res = await fetch('/api/v1/menu-items');
+      allMenuItems = await res.json();
+      const cats = [...new Map(allMenuItems.map(i => [i.category?._id, i.category])).values()].filter(Boolean);
+      const filterEl = document.getElementById('menu-filter');
+      cats.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.textContent = cat.name;
+        btn.onclick = function() { filterMenu(cat._id, this); };
+        filterEl.appendChild(btn);
+      });
+      renderMenu(allMenuItems);
+    }
+
+    function filterMenu(catId, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderMenu(catId === 'all' ? allMenuItems : allMenuItems.filter(i => i.category?._id === catId));
+    }
+
+    function renderMenu(items) {
+      document.getElementById('menu-grid').innerHTML = items.map(item => `
+        <div class="menu-card" style="${!item.isAvailable ? 'opacity:0.6' : ''}">
+          ${item.image ? `<img src="${item.image}" alt="${item.name}">` : `<div class="img-placeholder">🍽️</div>`}
+          <div class="menu-card-body">
+            <h3>${item.name}</h3>
+            <p>${item.description || ''}</p>
+            <div class="menu-card-footer">
+              <span class="menu-price">${item.price?.toLocaleString('vi-VN')}đ</span>
+              <span class="menu-cat">${item.category?.name || ''}</span>
+            </div>
+            ${item.isAvailable
+              ? `<button class="btn-add-cart" onclick="addToCart('${item._id}','${item.name}',${item.price},'${item.image||''}')">+ Thêm vào giỏ</button>`
+              : `<button class="btn-add-cart" disabled style="background:#aaa;cursor:not-allowed">🚫 Hết hàng</button>`
+            }
+          </div>
+        </div>`).join('');
+    }
+
+    // CART
+    function addToCart(id, name, price, image) {
+      const existing = cart.find(i => i.id === id);
+      if (existing) existing.qty++;
+      else cart.push({ id, name, price, image, qty: 1 });
+      saveCart();
+      showToast(`Đã thêm ${name}`);
+    }
+
+    function saveCart() {
+      localStorage.setItem('nh_cart', JSON.stringify(cart));
+      updateCartBadge();
+    }
+
+    function updateCartBadge() {
+      const total = cart.reduce((s, i) => s + i.qty, 0);
+      const badge = document.getElementById('cart-badge');
+      badge.textContent = total;
+      badge.style.display = total > 0 ? 'flex' : 'none';
+    }
+
+    function openCart() {
+      renderCart();
+      checkActiveOrder();
+      document.getElementById('cart-overlay').classList.add('open');
+      document.getElementById('cart-drawer').classList.add('open');
+    }
+
+    function closeCart() {
+      document.getElementById('cart-overlay').classList.remove('open');
+      document.getElementById('cart-drawer').classList.remove('open');
+    }
+
+    function renderCart() {
+      const body = document.getElementById('cart-body');
+      if (cart.length === 0) {
+        body.innerHTML = '<div class="cart-empty">🍽️ Chưa có món nào<br><small>Hãy chọn món từ thực đơn</small></div>';
+        document.getElementById('cart-total').textContent = '0đ';
+        return;
+      }
+      body.innerHTML = cart.map((item, idx) => `
+        <div class="cart-item">
+          ${item.image
+            ? `<img src="${item.image}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0">`
+            : `<div style="width:48px;height:48px;border-radius:8px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🍽️</div>`
+          }
+          <div class="cart-item-info">
+            <h4>${item.name}</h4>
+            <p>${(item.price * item.qty).toLocaleString('vi-VN')}đ</p>
+          </div>
+          <div class="cart-qty">
+            <button class="qty-btn" onclick="changeQty(${idx},-1)">−</button>
+            <span>${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${idx},1)">+</button>
+          </div>
+        </div>`).join('');
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('cart-total').textContent = total.toLocaleString('vi-VN') + 'đ';
+    }
+
+    function changeQty(idx, delta) {
+      cart[idx].qty += delta;
+      if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      saveCart();
+      renderCart();
+    }
+
+    // PLACE ORDER
+    async function placeOrder() {
+      if (!selectedTableId) { showToast('Vui lòng chọn bàn trước', 'error'); closeCart(); changeTable(); return; }
+      if (cart.length === 0) { showToast('Giỏ hàng trống', 'error'); return; }
+
+      const btn = document.getElementById('btn-place-order');
+      btn.disabled = true;
+      btn.textContent = 'Đang gửi...';
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        const res = await fetch('/api/v1/orders/place', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            tableId: selectedTableId,
+            items: cart.map(i => ({ menuItemId: i.id, quantity: i.qty, price: i.price }))
+          })
+        });
+
+        if (res.ok) {
+          cart = [];
+          saveCart();
+          closeCart();
+          showToast('🎉 Gọi món thành công! Nhân viên sẽ phục vụ bạn sớm.');
+        } else {
+          const err = await res.json();
+          showToast(err.message || 'Lỗi gọi món', 'error');
+        }
+      } catch (e) {
+        showToast('Lỗi kết nối', 'error');
+      }
+      btn.disabled = false;
+      btn.textContent = '✅ Gọi món ngay';
+    }
+
+    // PAYMENT MODAL
+    let _payOrderId = null;
+    let _payTotal = 0;
+    let _payDiscount = 0;
+    let _payDiscountCode = null;
+    let _payMethod = null;
+
+    async function openPaymentModal() {
+      if (!selectedTableId) { showToast('Vui lòng chọn bàn trước', 'error'); return; }
+      closeCart();
+
+      // Lấy đơn đang active của bàn
+      const res = await fetch('/api/v1/orders');
+      const orders = await res.json();
+      const activeOrder = orders.find(o =>
+        o.table?._id === selectedTableId && ['open', 'pending'].includes(o.status)
+      );
+
+      if (!activeOrder) {
+        showToast('Không tìm thấy đơn hàng đang hoạt động cho bàn này', 'error');
+        return;
+      }
+
+      _payOrderId = activeOrder._id;
+      _payDiscount = 0;
+      _payDiscountCode = null;
+      _payMethod = null;
+      document.getElementById('pay-discount-code').value = '';
+      document.getElementById('pay-discount-msg').style.display = 'none';
+      document.querySelectorAll('input[name="pay-method"]').forEach(r => r.checked = false);
+      document.getElementById('pay-method-info').innerHTML = '';
+      document.getElementById('pay-opt-cash').style.borderColor = '#ddd';
+      document.getElementById('pay-opt-transfer').style.borderColor = '#ddd';
+
+      // Lấy chi tiết đơn
+      const detRes = await fetch(`/api/v1/orders/${_payOrderId}`);
+      const { order, details } = await detRes.json();
+      _payTotal = details.reduce((s, d) => s + d.price * d.quantity, 0);
+
+      document.getElementById('pay-items').innerHTML = `
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px">
+          <thead><tr style="background:#f0f0f0"><th style="padding:6px;text-align:left">Món</th><th style="padding:6px;text-align:center">SL</th><th style="padding:6px;text-align:right">Thành tiền</th></tr></thead>
+          <tbody>${details.map(d => `<tr><td style="padding:5px 6px">${d.menuItem?.name}</td><td style="padding:5px 6px;text-align:center">${d.quantity}</td><td style="padding:5px 6px;text-align:right">${(d.price*d.quantity).toLocaleString('vi-VN')}đ</td></tr>`).join('')}</tbody>
+        </table>`;
+
+      renderPaySummary();
+      document.getElementById('modal-payment').classList.add('open');
+    }
+
+    function renderPaySummary() {
+      const final = Math.max(0, _payTotal - _payDiscount);
+      document.getElementById('pay-summary').innerHTML = `
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Tạm tính:</span><span>${_payTotal.toLocaleString('vi-VN')}đ</span></div>
+        ${_payDiscount > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#e74c3c"><span>Giảm giá${_payDiscountCode ? ' (' + _payDiscountCode + ')' : ''}:</span><span>-${_payDiscount.toLocaleString('vi-VN')}đ</span></div>` : ''}
+        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:16px;color:#27ae60"><span>Thành tiền:</span><span>${final.toLocaleString('vi-VN')}đ</span></div>`;
+    }
+
+    async function applyPayDiscount() {
+      const code = document.getElementById('pay-discount-code').value.trim();
+      const msgEl = document.getElementById('pay-discount-msg');
+      if (!code) return;
+      const res = await fetch('/api/v1/discounts/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, totalAmount: _payTotal })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        msgEl.style.color = '#e74c3c';
+        msgEl.textContent = '❌ ' + data.message;
+        msgEl.style.display = 'block';
+        _payDiscount = 0; _payDiscountCode = null;
+      } else {
+        _payDiscount = data.discountAmount;
+        _payDiscountCode = data.code;
+        msgEl.style.color = '#27ae60';
+        msgEl.textContent = `✅ Giảm ${data.discountAmount.toLocaleString('vi-VN')}đ`;
+        msgEl.style.display = 'block';
+      }
+      renderPaySummary();
+    }
+
+    function selectPayMethod(method) {
+      _payMethod = method;
+      document.getElementById('pay-opt-cash').style.borderColor = method === 'cash' ? '#27ae60' : '#ddd';
+      document.getElementById('pay-opt-transfer').style.borderColor = method === 'transfer' ? '#27ae60' : '#ddd';
+
+      if (method === 'cash') {
+        document.getElementById('pay-method-info').innerHTML = `
+          <div style="background:#e8f5e9;border:1px solid #27ae60;border-radius:8px;padding:12px;font-size:13px;color:#2e7d32">
+            🛎️ Nhân viên sẽ đến bàn hỗ trợ bạn trong giây lát. Vui lòng chờ!
+          </div>`;
+      } else {
+        const final = Math.max(0, _payTotal - _payDiscount).toLocaleString('vi-VN');
+        document.getElementById('pay-method-info').innerHTML = `
+          <div style="background:#e3f2fd;border:1px solid #3498db;border-radius:8px;padding:14px;font-size:13px;text-align:center">
+            <p style="font-weight:600;margin-bottom:8px;color:#1565c0">Thông tin chuyển khoản</p>
+            <p>Ngân hàng: <strong>Vietcombank</strong></p>
+            <p>Số TK: <strong>1234567890</strong></p>
+            <p>Chủ TK: <strong>NHA HANG ABC</strong></p>
+            <p style="margin-top:8px">Số tiền: <strong style="color:#e74c3c;font-size:16px">${final}đ</strong></p>
+            <p style="margin-top:6px;font-size:12px;color:#888">Nội dung CK: <strong>BAN ${selectedTableNum}</strong></p>
+            <div style="margin-top:10px;padding:10px;background:#fff;border-radius:6px;font-size:12px;color:#555">
+              📱 Quét mã QR hoặc chuyển khoản theo thông tin trên, sau đó nhấn Xác nhận
+            </div>
+          </div>`;
+      }
+    }
+
+    async function confirmPaymentRequest() {
+      if (!_payMethod) { showToast('Vui lòng chọn phương thức thanh toán', 'error'); return; }
+      const btn = document.getElementById('btn-confirm-payment');
+      btn.disabled = true; btn.textContent = 'Đang gửi...';
+
+      const final = Math.max(0, _payTotal - _payDiscount);
+      const res = await fetch(`/api/v1/orders/${_payOrderId}/request-payment`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: _payMethod,
+          discountCode: _payDiscountCode || undefined,
+          discountAmount: _payDiscount,
+          finalAmount: final
+        })
+      });
+
+      if (res.ok) {
+        closePaymentModal();
+        if (_payMethod === 'cash') {
+          showToast('✅ Đã gửi yêu cầu! Nhân viên sẽ đến thu tiền ngay.');
+        } else {
+          showToast('✅ Đã gửi yêu cầu! Nhân viên sẽ kiểm tra và xác nhận.');
+        }
+      } else {
+        const err = await res.json();
+        showToast(err.message || 'Lỗi', 'error');
+      }
+      btn.disabled = false; btn.textContent = '✅ Xác nhận';
+    }
+
+    function closePaymentModal() {
+      document.getElementById('modal-payment').classList.remove('open');
+    }
+
+    // Kiểm tra xem bàn có đơn active không để hiện nút thanh toán
+    async function checkActiveOrder() {
+      if (!selectedTableId) return;
+      try {
+        const res = await fetch('/api/v1/orders');
+        const orders = await res.json();
+        const active = orders.find(o =>
+          o.table?._id === selectedTableId && ['open', 'pending'].includes(o.status)
+        );
+        document.getElementById('btn-request-payment').style.display = active ? 'block' : 'none';
+      } catch {}
+    }
+
+    // RESERVATION
+    async function submitReservation() {
+      const name = document.getElementById('res-name').value.trim();
+      const phone = document.getElementById('res-phone').value.trim();
+      const email = document.getElementById('res-email').value.trim();
+      const datetime = document.getElementById('res-datetime').value;
+      const guests = document.getElementById('res-guests').value;
+      const note = document.getElementById('res-note').value;
+      const msgEl = document.getElementById('res-msg');
+      const btn = document.getElementById('btn-submit-res');
+
+      if (!name || !phone || !datetime) {
+        msgEl.style.background = '#fde8e8'; msgEl.style.color = '#e74c3c';
+        msgEl.textContent = '⚠️ Vui lòng điền đầy đủ họ tên, số điện thoại và ngày giờ.';
+        msgEl.style.display = 'block'; return;
+      }
+
+      const selectedDate = new Date(datetime);
+      const now = new Date();
+      if (selectedDate <= now) {
+        msgEl.style.background = '#fde8e8'; msgEl.style.color = '#e74c3c';
+        msgEl.textContent = '⚠️ Không thể đặt bàn trong quá khứ.';
+        msgEl.style.display = 'block'; return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Đang gửi...';
+      try {
+        const res = await fetch('/api/v1/reservations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerName: name, phone, email, reservationDate: datetime, guestCount: +guests, note })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msgEl.style.background = '#e8f5e9'; msgEl.style.color = '#27ae60';
+          msgEl.textContent = '✅ Đặt bàn thành công! Nhân viên sẽ liên hệ xác nhận với bạn sớm.';
+          msgEl.style.display = 'block';
+          document.getElementById('res-name').value = '';
+          document.getElementById('res-phone').value = '';
+          document.getElementById('res-email').value = '';
+          document.getElementById('res-note').value = '';
+        } else {
+          msgEl.style.background = '#fde8e8'; msgEl.style.color = '#e74c3c';
+          msgEl.textContent = '❌ ' + (data.message || 'Đặt bàn thất bại');
+          msgEl.style.display = 'block';
+        }
+      } catch {
+        msgEl.style.background = '#fde8e8'; msgEl.style.color = '#e74c3c';
+        msgEl.textContent = '❌ Lỗi kết nối, vui lòng thử lại.';
+        msgEl.style.display = 'block';
+      }
+      btn.disabled = false; btn.textContent = '🗓️ Đặt bàn ngay';
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    function navAuth() {
+      localStorage.removeItem('token'); localStorage.removeItem('role');
+      window.location.href = '/index.html';
+    }
+
+    // Init
+    const dt = new Date(Date.now() + 60 * 60 * 1000); dt.setMinutes(0);
+    const minDt = new Date(Date.now() + 30 * 60 * 1000); // tối thiểu 30 phút từ bây giờ
+    document.getElementById('res-datetime').min = minDt.toISOString().slice(0, 16);
+    document.getElementById('res-datetime').value = dt.toISOString().slice(0, 16);
+
+    if (token) {
+      fetch('/api/v1/auth/me', { headers: { 'Authorization': token } })
+        .then(r => r.json()).then(user => { document.getElementById('nav-username').textContent = '👤 ' + user.username; }).catch(() => {});
+    }
+
+    loadMenu();
+    loadTableModal();
+    updateCartBadge();
+    if (selectedTableId) checkActiveOrder();
+  </script>
+</body>
+</html>
